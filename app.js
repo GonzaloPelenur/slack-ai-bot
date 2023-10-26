@@ -3,6 +3,7 @@ const path = require("path");
 const { llog } = require("./src/utils");
 const { noBot } = require("./src/utils/ll-slack-utils/middleware");
 const handleAllNonBot = require("./src/handle-all-nonbot");
+
 // const { handleTesting, handleAllNonBot, handleBot } = require('./src/bot/handle-messages');
 // const slashHandler = require('./src/bot/handle-slashes');
 // const eventHandler = require('./src/bot/handle-events')
@@ -10,7 +11,8 @@ const handleAllNonBot = require("./src/handle-all-nonbot");
 
 require("dotenv").config();
 global.ROOT_DIR = path.resolve(__dirname);
-
+var continue_play = false;
+var play_channel = "";
 const handleTesting = async ({ message, say }) => {
   llog.cyan("got testing testing", message);
   // say() sends a message to the channel where the event was triggered
@@ -34,6 +36,31 @@ const app = new App({
 app.message(/testing testing/i, handleTesting);
 app.message(/hello/, handleHello);
 app.message(/.*/, noBot, handleAllNonBot);
+app.command("/playprompt", async ({ command, ack, say }) => {
+  // llog.yellow("got a slash command", command);
+  await ack({ text: "Will start a play for: " + command.text });
+});
+
+app.command("/start-play", async ({ command, ack, say }) => {
+  // llog.yellow("got a slash command", command);
+  play_channel = command.channel_id;
+  await ack({ text: "Will start the play" });
+  continue_play = true;
+  var counter = 0;
+  while (continue_play) {
+    counter++;
+    await app.client.chat.postMessage({
+      channel: play_channel,
+      text: "test " + counter.toString(),
+    });
+  }
+});
+
+app.command("/end-play", async ({ command, ack, say }) => {
+  // llog.yellow("got a slash command", command);
+  await ack({ text: "Will end the play" });
+  continue_play = false;
+});
 
 // app.message(subtype('bot_message'), handleBot );
 
@@ -53,5 +80,6 @@ app.message(/.*/, noBot, handleAllNonBot);
   // Start your app
   global.BOT_CONFIG = { channels: [process.env.SLACK_TESTS_CHANNEL] };
   await app.start();
+  // await socketModeClient.start();
   console.log("⚡️ Bolt app is running!");
 })();
