@@ -3,7 +3,8 @@ const path = require("path");
 const { llog } = require("./src/utils");
 const { noBot } = require("./src/utils/ll-slack-utils/middleware");
 const handleAllNonBot = require("./src/handle-all-nonbot");
-const director = require("./src/director");
+const { director, startPlay, stopPlay } = require("./src/director");
+const { Play } = require("./src/play");
 
 // const { handleTesting, handleAllNonBot, handleBot } = require('./src/bot/handle-messages');
 // const slashHandler = require('./src/bot/handle-slashes');
@@ -41,6 +42,8 @@ app.command("/playprompt", async ({ command, ack, say }) => {
   // llog.yellow("got a slash command", command);
   await ack({ text: "Will start a play for: " + command.text });
   director({ message: command, say: say, client: app.client });
+  // const play = new Play({ message: command, client: app.client });
+  // await play.director();
 });
 
 app.command("/start-play", async ({ command, ack, say }) => {
@@ -49,19 +52,21 @@ app.command("/start-play", async ({ command, ack, say }) => {
   await ack({ text: "Will start the play" });
   continue_play = true;
   var counter = 0;
-  while (continue_play) {
-    counter++;
-    await app.client.chat.postMessage({
-      channel: play_channel,
-      text: "test " + counter.toString(),
-    });
-  }
+  startPlay({ message: command, say: say, client: app.client });
+  // while (continue_play) {
+  //   counter++;
+  //   await app.client.chat.postMessage({
+  //     channel: play_channel,
+  //     text: "test " + counter.toString(),
+  //   });
+  // }
 });
 
 app.command("/end-play", async ({ command, ack, say }) => {
   // llog.yellow("got a slash command", command);
   await ack({ text: "Will end the play" });
   continue_play = false;
+  stopPlay();
 });
 
 // app.message(subtype('bot_message'), handleBot );

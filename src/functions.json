@@ -1,0 +1,50 @@
+{
+  "create_play_characters": {
+    "name": "create_play_characters",
+    "description": "Use a prompt to create characters with names, roles, and descrptions that include their personality traits and physical appearance. Create any supporting characters as needed",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "characters": {
+          "type": "array",
+          "description": "An array of a character object that contains character names, roles, traits, and physical appearance.",
+          "items": {
+            "type": "object",
+            "description": "name: The name of the character. role: The role of the character. traits: The personality traits of the character. appearance: The physical appearance of the character.",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "The name of the character, has to be unique and different from the role."
+              },
+              "role": {
+                "type": "string",
+                "description": "The role of the character, has to be different from the name."
+              },
+              "traits": {
+                "type": "string",
+                "description": "The personality traits of the character."
+              },
+              "appearance": {
+                "type": "string",
+                "description": "The physical appearance of the character."
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "choose_character_turn": {
+    "name": "choose_character_turn",
+    "description": "Given a play prompt, the previous messages, and existing characters, choose whose turn it is to talk.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "the name of the character whose turn it is to talk"
+        }
+      }
+    }
+  }
+}

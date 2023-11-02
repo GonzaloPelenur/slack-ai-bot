@@ -1,5 +1,6 @@
 const { llog } = require("./utils");
 const OpenAI = require("openai");
+const functions_data = require("./functions.json");
 
 require("dotenv").config();
 var conversation_history = [];
@@ -15,49 +16,7 @@ const createCharacters = async ({ prompt, client, channel }) => {
   // use function
   //   console.log("createCharacters", prompt);
   const messages = [{ role: "user", content: prompt }];
-  const functions = [
-    {
-      name: "create_play_characters",
-      description:
-        "Use a prompt to create characters with names, roles, and descrptions that include their personality traits and physical appearance.",
-      parameters: {
-        type: "object",
-        properties: {
-          characters: {
-            type: "array",
-            description:
-              "An array of a character object that contains character names, roles, traits, and physical appearance.",
-            items: {
-              type: "object",
-              description:
-                "name: The name of the character. role: The role of the character. traits: The personality traits of the character. appearance: The physical appearance of the character.",
-              properties: {
-                name: {
-                  type: "string",
-                  description:
-                    "The name of the character, has to be unique and different from the role.",
-                },
-                role: {
-                  type: "string",
-                  description:
-                    "The role of the character, has to be different from the name.",
-                },
-                traits: {
-                  type: "string",
-                  description: "The personality traits of the character.",
-                },
-                appearance: {
-                  type: "string",
-                  description: "The physical appearance of the character.",
-                },
-              },
-            },
-          },
-        },
-        // required: ["characters"],
-      },
-    },
-  ];
+  const functions = [functions_data.create_play_characters];
   const response = await openai.chat.completions.create({
     model: process.env.GPT_MODEL,
     messages: messages,
@@ -109,23 +68,7 @@ const chooseTurn = async ({ previous_character }) => {
   )}". The last character that spoke was "${previous_character}". Make sure to choose a different character to speak.`;
   // llog.red("GPT_prompt", GPT_prompt);
   const messages = [{ role: "user", content: GPT_prompt }];
-  const functions = [
-    {
-      name: "choose_character_turn",
-      description:
-        "Given a play prompt, the previous messages, and existing characters, choose whose turn it is to talk.",
-      parameters: {
-        type: "object",
-        properties: {
-          name: {
-            type: "string",
-            description: "the name of the character whose turn it is to talk",
-          },
-        },
-        // required: ["characters"],
-      },
-    },
-  ];
+  const functions = [functions_data.choose_character_turn];
   const response = await openai.chat.completions.create({
     model: process.env.GPT_MODEL,
     messages: messages,
@@ -200,7 +143,6 @@ const director = async ({ message, say, client }) => {
   // llog.magenta("Director here, will create a scene");
   // await createScene();
   // llog.magenta("Director here, will choose next turn");
-  character_chosen = "no one, this is the first line";
   // character_chosen = await chooseTurn({
   //   previous_character: character_chosen,
   // });
@@ -230,7 +172,7 @@ const director = async ({ message, say, client }) => {
   //   text: line,
   // });
 
-  while (talk) {
+  while (false) {
     llog.magenta("Director here, will choose next turn");
     character_chosen = await chooseTurn({
       previous_character: character_chosen,
@@ -250,5 +192,34 @@ const director = async ({ message, say, client }) => {
   // say() sends a message to the channel where the event was triggered
   // await say(`the bot is running, <@${message.user}>.`);
 };
+async function sleep(millis) {
+  return new Promise((resolve) => setTimeout(resolve, millis));
+}
+const startPlay = async ({ message, say, client }) => {
+  talk = true;
+  llog.magenta("start play");
+  character_chosen = "no one, this is the first line";
+  while (talk) {
+    llog.magenta("Director here, will choose next turn");
+    character_chosen = await chooseTurn({
+      previous_character: character_chosen,
+    });
+    llog.yellow(`    The character chosen is: ${character_chosen}`);
+    llog.magenta(`Director here, will create a line for ${character_chosen}`);
+    line = await createMessageAsCharacter({
+      character_chosen: character_chosen,
+    });
+    llog.yellow(`    The line created is: ${line}`);
+    conversation_history.push(line);
+    await client.chat.postMessage({
+      channel: message.channel_id,
+      text: line,
+    });
+  }
+};
+const stopPlay = () => {
+  talk = false;
+  llog.magenta("stop play");
+};
 
-module.exports = director;
+module.exports = { director, startPlay, stopPlay };
