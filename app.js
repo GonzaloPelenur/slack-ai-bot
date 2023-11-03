@@ -4,8 +4,8 @@ const { llog } = require("./src/utils");
 const { noBot } = require("./src/utils/ll-slack-utils/middleware");
 const handleAllNonBot = require("./src/handle-all-nonbot");
 const { director, startPlay, stopPlay } = require("./src/director");
-const { Play } = require("./src/play");
-
+let Play = require("./src/play");
+let plays = [];
 // const { handleTesting, handleAllNonBot, handleBot } = require('./src/bot/handle-messages');
 // const slashHandler = require('./src/bot/handle-slashes');
 // const eventHandler = require('./src/bot/handle-events')
@@ -41,32 +41,24 @@ app.message(/.*/, noBot, handleAllNonBot);
 app.command("/playprompt", async ({ command, ack, say }) => {
   // llog.yellow("got a slash command", command);
   await ack({ text: "Will start a play for: " + command.text });
-  director({ message: command, say: say, client: app.client });
-  // const play = new Play({ message: command, client: app.client });
-  // await play.director();
+  // director({ message: command, say: say, client: app.client });
+  let play = new Play(command, app.client);
+  plays.push(play);
+  // Play.message = command;
+  // Play.client = app.client;
+  await plays[plays.length - 1].initialize();
 });
 
 app.command("/start-play", async ({ command, ack, say }) => {
   // llog.yellow("got a slash command", command);
-  play_channel = command.channel_id;
   await ack({ text: "Will start the play" });
-  continue_play = true;
-  var counter = 0;
-  startPlay({ message: command, say: say, client: app.client });
-  // while (continue_play) {
-  //   counter++;
-  //   await app.client.chat.postMessage({
-  //     channel: play_channel,
-  //     text: "test " + counter.toString(),
-  //   });
-  // }
+  plays[plays.length - 1].start();
 });
 
 app.command("/end-play", async ({ command, ack, say }) => {
   // llog.yellow("got a slash command", command);
   await ack({ text: "Will end the play" });
-  continue_play = false;
-  stopPlay();
+  plays[plays.length - 1].stop();
 });
 
 // app.message(subtype('bot_message'), handleBot );

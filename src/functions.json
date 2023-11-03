@@ -1,7 +1,7 @@
 {
   "create_play_characters": {
     "name": "create_play_characters",
-    "description": "Use a prompt to create characters with names, roles, and descrptions that include their personality traits and physical appearance. Create any supporting characters as needed",
+    "description": "Use a prompt to create characters with names, roles, and descrptions that include their personality traits and physical appearance. Create any supporting characters as needed.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -42,9 +42,15 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "the name of the character whose turn it is to talk"
+          "description": "the name of the character whose turn it is to talk."
         }
       }
     }
+  },
+  "narrator": {
+    "name": "Narrator",
+    "role": "Based on the context, the narrator can be a character in the play or an omniscient narrator. The narrator is the one who tells the story and sets the scene. It does so based on the previous conversation history, available characters and the play prompt.",
+    "traits": "Descriptive, Neutral",
+    "appearance": "Invisible"
   }
 }
