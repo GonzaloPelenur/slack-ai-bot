@@ -2,7 +2,6 @@ const { App, subtype } = require("@slack/bolt");
 const path = require("path");
 const { llog } = require("./src/utils");
 const { noBot } = require("./src/utils/ll-slack-utils/middleware");
-const handleAllNonBot = require("./src/handle-all-nonbot");
 const { director, startPlay, stopPlay } = require("./src/director");
 let Play = require("./src/play");
 let plays = [];
@@ -37,7 +36,6 @@ const app = new App({
 
 app.message(/testing testing/i, handleTesting);
 app.message(/hello/, handleHello);
-app.message(/.*/, noBot, handleAllNonBot);
 app.command("/playprompt", async ({ command, ack, say }) => {
   // llog.yellow("got a slash command", command);
   await ack({ text: "Will start a play for: " + command.text });

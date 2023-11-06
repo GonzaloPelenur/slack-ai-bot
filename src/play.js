@@ -4,6 +4,10 @@ const functions_data = require("./functions.json");
 
 require("dotenv").config();
 
+function random(min, max) {
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
 let Play = class {
   constructor(message, client) {
     this.client = client;
@@ -132,7 +136,14 @@ let Play = class {
       llog.yellow(`    The line created is: ${this.next_line}`);
       await this._postMessage(`[${this.character_chosen}] - ${this.next_line}`);
       llog.magenta("Director here, will choose next turn");
-      await this.chooseTurn();
+      let rnd = random(1, 3);
+      if (rnd == 1 && this.character_chosen != "Narrator") {
+        // 1/3 chance to choose narrator
+        this.character_chosen = "Narrator";
+      } else {
+        await this.chooseTurn();
+      }
+
       llog.yellow(`    The character chosen is: ${this.character_chosen}`);
     }
   }
