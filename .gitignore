@@ -132,3 +132,5 @@ dist
 .DS_Store
 .env*
 _hidden*
+
+play.txt

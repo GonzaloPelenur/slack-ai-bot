@@ -1,6 +1,7 @@
 const { llog } = require("./utils");
 const OpenAI = require("openai");
 const functions_data = require("./functions.json");
+const fs = require("fs");
 
 require("dotenv").config();
 
@@ -15,6 +16,7 @@ let Play = class {
     this.channel_id = message.channel_id;
     this.prompt = message.text;
     this.conversation_history = [];
+    this.logs = [];
     this.characters = [];
     this.character_chosen = "Narrator";
     this.talk = true;
@@ -43,6 +45,7 @@ let Play = class {
     for (const character of this.characters) {
       output += `--- A ${character.role} named ${character.name}, that's ${character.traits}, and looks like ${character.appearance}\n\n`;
     }
+    this.logs.push("The characters created are: \n" + output);
     await this._postMessage(
       `Great! Thanks for waiting. The characters created are: \n${output}`
     );
@@ -114,6 +117,7 @@ let Play = class {
     const line = response.choices[0].message.content;
     this.next_line = line;
     this.conversation_history.push(line);
+    this.logs.push(line);
     return line;
   }
   async _postMessage(text) {
@@ -126,8 +130,11 @@ let Play = class {
   async start() {
     llog.magenta("Start play");
     await this._postMessage(
-      "Starting play. To end the play, type `/end-play` - Enojy!"
+      "Starting play. To pause the play, type `/pause` - Enojy!"
     );
+    this.play();
+  }
+  async play() {
     while (this.talk) {
       llog.magenta(
         `Director here, will create a line for ${this.character_chosen}`
@@ -147,9 +154,50 @@ let Play = class {
       llog.yellow(`    The character chosen is: ${this.character_chosen}`);
     }
   }
-  async stop() {
-    llog.magenta("Stop play");
+  async pause() {
+    llog.magenta("Pause play");
+    await this._postMessage(
+      "Pausing play. To resume the play, type `/resume` - Have a good interval!"
+    );
     this.talk = false;
+  }
+  async resume() {
+    llog.magenta("Resume play");
+    await this._postMessage(
+      "Resuming play. To pause the play, type `/pause` - Enojy!\nIf you want to export the current play, type `/export`."
+    );
+    this.talk = true;
+    this.play();
+  }
+  async hidden() {
+    await this._postMessage("Hehehe you've found me :D.");
+  }
+  async export() {
+    llog.magenta("Export play");
+    const file_name = "play.txt";
+    var writeStream = fs.createWriteStream(file_name);
+    // var var_text = "";
+    for (const log of this.logs) {
+      writeStream.write(log + "\n");
+      // var_text += log + "\n";
+    }
+    writeStream.end();
+
+    await this.client.files.upload({
+      // channels can be a list of one to many strings
+      channels: this.channel_id,
+      initial_comment: "Here's the file containing the play! :smile:",
+      // Include your filename in a ReadStream here
+      file: fs.createReadStream(file_name),
+    });
+  }
+  async end() {
+    llog.magenta("End play");
+    await this._postMessage(
+      "Ended play. Hope you had a great time! To export the play, type `/export`."
+    );
+    // reset variables to initial state
+    // this.talk = false;
   }
   async initialize() {
     await this._postMessage(

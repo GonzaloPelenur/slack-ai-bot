@@ -1,7 +1,7 @@
 {
   "create_play_characters": {
     "name": "create_play_characters",
-    "description": "Use a prompt to create characters with names, roles, and descrptions that include their personality traits and physical appearance. Create any supporting characters as needed.",
+    "description": "Use a prompt to create characters with names, roles, and descrptions that include their personality traits and physical appearance. Create additional supporting characters.",
     "parameters": {
       "type": "object",
       "properties": {

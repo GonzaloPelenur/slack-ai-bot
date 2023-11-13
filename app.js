@@ -2,7 +2,6 @@ const { App, subtype } = require("@slack/bolt");
 const path = require("path");
 const { llog } = require("./src/utils");
 const { noBot } = require("./src/utils/ll-slack-utils/middleware");
-const { director, startPlay, stopPlay } = require("./src/director");
 let Play = require("./src/play");
 let plays = [];
 // const { handleTesting, handleAllNonBot, handleBot } = require('./src/bot/handle-messages');
@@ -51,6 +50,29 @@ app.command("/start-play", async ({ command, ack, say }) => {
   // llog.yellow("got a slash command", command);
   await ack({ text: "Will start the play" });
   plays[plays.length - 1].start();
+});
+
+app.command("/pause", async ({ command, ack, say }) => {
+  // llog.yellow("got a slash command", command);
+  await ack({ text: "Will pause the play" });
+  plays[plays.length - 1].pause();
+});
+
+app.command("/resume", async ({ command, ack, say }) => {
+  // llog.yellow("got a slash command", command);
+  await ack({ text: "Will resume the play" });
+  plays[plays.length - 1].resume();
+});
+
+app.command("/hidden", async ({ command, ack, say }) => {
+  // llog.yellow("got a slash command", command);
+  plays[plays.length - 1].hidden();
+});
+
+app.command("/export", async ({ command, ack, say }) => {
+  // llog.yellow("got a slash command", command);
+  await ack({ text: "Will export the play" });
+  plays[plays.length - 1].export();
 });
 
 app.command("/end-play", async ({ command, ack, say }) => {
