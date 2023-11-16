@@ -117,7 +117,6 @@ let Play = class {
     const line = response.choices[0].message.content;
     this.next_line = line;
     this.conversation_history.push(line);
-    this.logs.push(line);
     return line;
   }
   async _postMessage(text) {
@@ -142,6 +141,7 @@ let Play = class {
       await this.createMessageAsCharacter();
       llog.yellow(`    The line created is: ${this.next_line}`);
       await this._postMessage(`[${this.character_chosen}] - ${this.next_line}`);
+      this.logs.push(`[${this.character_chosen}] - ${this.next_line}`);
       llog.magenta("Director here, will choose next turn");
       let rnd = random(1, 3);
       if (rnd == 1 && this.character_chosen != "Narrator") {
@@ -175,20 +175,20 @@ let Play = class {
   async export() {
     llog.magenta("Export play");
     const file_name = "play.txt";
-    var writeStream = fs.createWriteStream(file_name);
-    // var var_text = "";
+    var content = "";
     for (const log of this.logs) {
-      writeStream.write(log + "\n");
-      // var_text += log + "\n";
+      content += log + "\n\n";
     }
-    writeStream.end();
+    const buffer = Buffer.from(content, "utf8");
 
     await this.client.files.upload({
       // channels can be a list of one to many strings
       channels: this.channel_id,
       initial_comment: "Here's the file containing the play! :smile:",
       // Include your filename in a ReadStream here
-      file: fs.createReadStream(file_name),
+      filename: file_name,
+      filetype: "txt",
+      file: buffer,
     });
   }
   async end() {
